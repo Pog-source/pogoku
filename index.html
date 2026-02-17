@@ -1,0 +1,320 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pogoku | Dental Notes</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="page">
+    <section id="landingView">
+      <section class="landing-top">
+        <header class="hero hero-landing">
+          <p class="eyebrow">Dental Notes Assistant</p>
+          <div class="brand-row">
+            <button id="corgiSwapBtn" class="corgi-top-left corgi-swap-btn" type="button" aria-label="Change corgi icon" title="Change corgi icon">
+              <img id="randomCorgiIcon" src="assets/corgi/corgi-split-1.png" alt="" />
+            </button>
+            <h1 id="landingBrandTitle">Pogoku</h1>
+          </div>
+          <p class="subhead">Pick a workflow, tap options, and copy notes straight into your dental software in seconds.</p>
+        </header>
+
+        <aside class="landing-clock" aria-label="Current date and time">
+          <p class="clock-eyebrow">Local Time</p>
+          <p id="landingClockTime" class="clock-time">--:--:--</p>
+          <p id="landingClockDate" class="clock-date">Loading date...</p>
+        </aside>
+      </section>
+
+      <section class="template-zone" id="landingTemplateZone" aria-label="Note templates">
+        <div class="template-zone-head">
+          <h2>Choose Workflow</h2>
+          <p>Pathway cards open branch options. Direct templates open immediately.</p>
+        </div>
+
+        <section class="grid" id="landingTemplateGrid" aria-label="Note templates">
+          <article class="card clickable" id="examCard" role="button" tabindex="0" aria-label="Open Exam pathways">
+          <div class="icon" aria-hidden="true"><img src="assets/icons-health/specialties__medical-records.svg" alt="" /></div>
+          <div>
+            <p class="card-type">Pathway</p>
+            <h2>Exam</h2>
+            <p>New/Existing and Adult/Child branches.</p>
+          </div>
+          </article>
+
+          <article class="card clickable" data-template-key="restoration" role="button" tabindex="0" aria-label="Open Restoration template">
+          <div class="icon" aria-hidden="true"><img src="assets/icons-health/symbols__medical-search.svg" alt="" /></div>
+          <div>
+            <p class="card-type">Template</p>
+            <h2>Restoration</h2>
+            <p>Direct access to your restoration note builder.</p>
+          </div>
+          </article>
+
+          <article class="card clickable" id="extractionCard" role="button" tabindex="0" aria-label="Open Extraction pathways">
+          <div class="icon" aria-hidden="true"><img src="assets/icons-health/specialties__accident-and_emergency.svg" alt="" /></div>
+          <div>
+            <p class="card-type">Pathway</p>
+            <h2>Extraction</h2>
+            <p>Choose Adult or Child branch.</p>
+          </div>
+          </article>
+
+          <article class="card card-soon">
+          <div class="icon" aria-hidden="true"><img src="assets/icons-health/specialties__medical-records.svg" alt="" /></div>
+          <div>
+            <p class="card-type">Coming Soon</p>
+            <h2>Denture Stages</h2>
+            <p>Placeholder card for future workflow build.</p>
+          </div>
+          </article>
+
+          <article class="card card-soon">
+          <div class="icon" aria-hidden="true"><img src="assets/icons-health/devices__syringe.svg" alt="" /></div>
+          <div>
+            <p class="card-type">Coming Soon</p>
+            <h2>Endo</h2>
+            <p>Template scaffold not yet built.</p>
+          </div>
+          </article>
+
+          <article class="card clickable" id="crownCard" role="button" tabindex="0" aria-label="Open Crown pathways">
+          <div class="icon" aria-hidden="true"><img src="assets/icons-health/body__tooth.svg" alt="" /></div>
+          <div>
+            <p class="card-type">Pathway</p>
+            <h2>Crown</h2>
+            <p>Fit, Prep, or Recement.</p>
+          </div>
+          </article>
+
+          <article class="card clickable" id="periodontalCard" role="button" tabindex="0" aria-label="Open Periodontal pathways">
+          <div class="icon" aria-hidden="true"><img src="assets/icons-health/devices__dental-hygiene.svg" alt="" /></div>
+          <div>
+            <p class="card-type">Pathway</p>
+            <h2>Periodontal</h2>
+            <p>Treatment or Emergency pathway.</p>
+          </div>
+          </article>
+
+          <article class="card card-soon">
+          <div class="icon" aria-hidden="true"><img src="assets/icons-health/shapes__star-large.svg" alt="" /></div>
+          <div>
+            <p class="card-type">Coming Soon</p>
+            <h2>Freestyle Appointment</h2>
+            <p>Custom freeform note workflow.</p>
+          </div>
+          </article>
+        </section>
+      </section>
+
+      <section id="examFlowView" class="pathway hidden" aria-label="Exam pathways flow">
+        <div class="pathway-head">
+          <h2 class="pathway-title">Exam</h2>
+          <button id="examFlowBackBtn" class="secondary" type="button">Back</button>
+        </div>
+
+        <div id="examStepRoot" class="pathway-grid">
+          <button class="path-big-btn" id="examNewBtn" type="button">
+            <span class="path-big-btn-inner">
+              <span class="path-big-btn-icon" aria-hidden="true"><img src="assets/icons-health/specialties__medical-records.svg" alt="" /></span>
+              <span>New</span>
+            </span>
+          </button>
+          <button class="path-big-btn" id="examExistingBtn" type="button">
+            <span class="path-big-btn-inner">
+              <span class="path-big-btn-icon" aria-hidden="true"><img src="assets/icons-health/objects__calendar.svg" alt="" /></span>
+              <span>Existing</span>
+            </span>
+          </button>
+        </div>
+
+        <div id="examStepNew" class="pathway-grid hidden">
+          <button class="path-big-btn" data-template-key="new-patient-exam" type="button">
+            <span class="path-big-btn-inner">
+              <span class="path-big-btn-icon" aria-hidden="true"><img src="assets/icons-health/devices__stethoscope.svg" alt="" /></span>
+              <span>Adult</span>
+            </span>
+          </button>
+          <button class="path-big-btn" id="examNewChildBtn" type="button">
+            <span class="path-big-btn-inner">
+              <span class="path-big-btn-icon" aria-hidden="true"><img src="assets/icons-health/people__child-care.svg" alt="" /></span>
+              <span>Child</span>
+            </span>
+          </button>
+        </div>
+
+        <div id="examStepNewChild" class="pathway-grid hidden">
+          <button class="path-big-btn" data-template-key="child-new-0-6" type="button">
+            <span class="path-big-btn-inner">
+              <span class="path-big-btn-icon" aria-hidden="true"><img src="assets/icons-health/people__baby-0306m.svg" alt="" /></span>
+              <span>0-6</span>
+            </span>
+          </button>
+          <button class="path-big-btn" data-template-key="child-new-6-8" type="button">
+            <span class="path-big-btn-inner">
+              <span class="path-big-btn-icon" aria-hidden="true"><img src="assets/icons-health/people__child-care.svg" alt="" /></span>
+              <span>6-8</span>
+            </span>
+          </button>
+          <button class="path-big-btn" data-template-key="child-new-9-12" type="button">
+            <span class="path-big-btn-inner">
+              <span class="path-big-btn-icon" aria-hidden="true"><img src="assets/icons-health/people__child-cognition.svg" alt="" /></span>
+              <span>9-12</span>
+            </span>
+          </button>
+          <button class="path-big-btn" data-template-key="child-new-12-18" type="button">
+            <span class="path-big-btn-inner">
+              <span class="path-big-btn-icon" aria-hidden="true"><img src="assets/icons-health/people__child-program.svg" alt="" /></span>
+              <span>12-18</span>
+            </span>
+          </button>
+        </div>
+
+        <div id="examStepExisting" class="pathway-grid hidden">
+          <button class="path-big-btn" data-template-key="recall-exam" type="button">
+            <span class="path-big-btn-inner">
+              <span class="path-big-btn-icon" aria-hidden="true"><img src="assets/icons-health/objects__calendar.svg" alt="" /></span>
+              <span>Adult</span>
+            </span>
+          </button>
+          <button class="path-big-btn" data-template-key="child-recall-easy" type="button">
+            <span class="path-big-btn-inner">
+              <span class="path-big-btn-icon" aria-hidden="true"><img src="assets/icons-health/people__child-care.svg" alt="" /></span>
+              <span>Child</span>
+            </span>
+          </button>
+        </div>
+      </section>
+
+      <section id="extractionFlowView" class="pathway hidden" aria-label="Extraction pathways flow">
+        <div class="pathway-head">
+          <h2 class="pathway-title">Extraction</h2>
+          <button id="extractionFlowBackBtn" class="secondary" type="button">Back</button>
+        </div>
+        <div class="pathway-grid">
+          <button class="path-big-btn" data-template-key="extraction-adult" type="button">
+            <span class="path-big-btn-inner">
+              <span class="path-big-btn-icon" aria-hidden="true"><img src="assets/icons-health/devices__stethoscope.svg" alt="" /></span>
+              <span>Adult</span>
+            </span>
+          </button>
+          <button class="path-big-btn" data-template-key="extraction-child" type="button">
+            <span class="path-big-btn-inner">
+              <span class="path-big-btn-icon" aria-hidden="true"><img src="assets/icons-health/people__child-care.svg" alt="" /></span>
+              <span>Child</span>
+            </span>
+          </button>
+        </div>
+      </section>
+
+      <section id="crownFlowView" class="pathway hidden" aria-label="Crown pathways flow">
+        <div class="pathway-head">
+          <h2 class="pathway-title">Crown</h2>
+          <button id="crownFlowBackBtn" class="secondary" type="button">Back</button>
+        </div>
+        <div class="pathway-grid">
+          <button class="path-big-btn" data-template-key="crown-fit" type="button">
+            <span class="path-big-btn-inner">
+              <span class="path-big-btn-icon" aria-hidden="true"><img src="assets/icons-health/body__tooth.svg" alt="" /></span>
+              <span>Fit</span>
+            </span>
+          </button>
+          <button class="path-big-btn" data-template-key="crown-prep" type="button">
+            <span class="path-big-btn-inner">
+              <span class="path-big-btn-icon" aria-hidden="true"><img src="assets/icons-health/body__tooth.svg" alt="" /></span>
+              <span>Prep</span>
+            </span>
+          </button>
+          <button class="path-big-btn" data-template-key="crown-recement" type="button">
+            <span class="path-big-btn-inner">
+              <span class="path-big-btn-icon" aria-hidden="true"><img src="assets/icons-health/devices__medical-sample.svg" alt="" /></span>
+              <span>Recement</span>
+            </span>
+          </button>
+        </div>
+      </section>
+
+      <section id="periodontalFlowView" class="pathway hidden" aria-label="Periodontal pathways flow">
+        <div class="pathway-head">
+          <h2 class="pathway-title">Periodontal</h2>
+          <button id="periodontalFlowBackBtn" class="secondary" type="button">Back</button>
+        </div>
+        <div class="pathway-grid">
+          <button class="path-big-btn" data-template-key="periodontal-treatment" type="button">
+            <span class="path-big-btn-inner">
+              <span class="path-big-btn-icon" aria-hidden="true"><img src="assets/icons-health/devices__dental-hygiene.svg" alt="" /></span>
+              <span>Treatment</span>
+            </span>
+          </button>
+          <button class="path-big-btn" data-template-key="periodontal-emergency" type="button">
+            <span class="path-big-btn-inner">
+              <span class="path-big-btn-icon" aria-hidden="true"><img src="assets/icons-health/places__emergency-post.svg" alt="" /></span>
+              <span>Emergency</span>
+            </span>
+          </button>
+        </div>
+      </section>
+    </section>
+
+    <section id="builderView" class="hidden" aria-label="Note template builder">
+      <header class="hero hero-inline">
+        <div>
+          <p class="eyebrow">Dental Notes Assistant</p>
+          <h1 id="builderTitle">Template</h1>
+        </div>
+        <div class="header-actions">
+          <select id="templatePicker" class="secondary template-picker" aria-label="Switch template"></select>
+          <button id="resetTemplateBtn" class="secondary" type="button">Reset Template</button>
+          <button id="backBtn" class="secondary" type="button">Back to Templates</button>
+        </div>
+      </header>
+
+      <section class="workspace">
+        <div class="builder" id="builder"></div>
+
+        <aside class="preview-pane">
+          <div class="preview-head">
+            <h2>Generated Note</h2>
+            <div class="copy-tools">
+              <button id="copyNoteBtn" class="primary" type="button">Copy Note</button>
+              <span id="copyWarning" class="copy-warning hidden" aria-live="polite"></span>
+            </div>
+          </div>
+          <div id="noteOutput" class="output" contenteditable="true" spellcheck="false" aria-live="polite"></div>
+        </aside>
+      </section>
+    </section>
+  </main>
+
+  <div id="toothModal" class="modal-backdrop hidden" aria-hidden="true">
+    <section class="modal-card" role="dialog" aria-modal="true" aria-labelledby="toothModalTitle">
+      <div class="modal-head">
+        <h2 id="toothModalTitle">Select tooth and surfaces</h2>
+        <button id="closeToothModalBtn" class="icon-close" type="button" aria-label="Close">×</button>
+      </div>
+
+      <div id="toothGrid" class="tooth-grid"></div>
+
+      <div class="surface-section">
+        <p class="row-label">Surfaces (optional)</p>
+        <div id="surfaceGrid" class="surface-grid"></div>
+      </div>
+
+      <p id="toothSelectionPreview" class="tooth-preview">Selected: none</p>
+
+      <div class="modal-actions">
+        <button id="cancelToothModalBtn" class="secondary" type="button">Cancel</button>
+        <button id="addToothSelectionBtn" class="primary" type="button" disabled>Add to line</button>
+      </div>
+    </section>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
+
