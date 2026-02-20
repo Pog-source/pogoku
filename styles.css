@@ -749,6 +749,16 @@ h1 {
   box-shadow: inset 0 0 0 1px #c98add;
 }
 
+.tooth-btn.focused {
+  border-color: #0b7f8f;
+  box-shadow: inset 0 0 0 1px #7ad0d8;
+}
+
+.surface-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
 .surface-section {
   margin-top: 0.8rem;
 }
@@ -863,6 +873,14 @@ h1 {
   font-family: "Manrope", sans-serif;
   line-height: 1.45;
   font-size: 0.98rem;
+}
+
+.manual-edit-line {
+  font-weight: 800;
+  color: #7a1f56;
+  background: #fff0f8;
+  border-radius: 4px;
+  padding: 0 0.08rem;
 }
 
 @media (max-width: 1060px) {

@@ -43,7 +43,7 @@
           <div>
             <p class="card-type">Pathway</p>
             <h2>Exam</h2>
-            <p>New/Existing and Adult/Child branches.</p>
+            <p>Quick access to Adult Exam or Child Exam.</p>
           </div>
           </article>
 
@@ -65,21 +65,21 @@
           </div>
           </article>
 
-          <article class="card card-soon">
+          <article class="card clickable" data-template-key="denture-stages" role="button" tabindex="0" aria-label="Open Denture Stages template">
           <div class="icon" aria-hidden="true"><img src="assets/icons-health/specialties__medical-records.svg" alt="" /></div>
           <div>
-            <p class="card-type">Coming Soon</p>
+            <p class="card-type">Template</p>
             <h2>Denture Stages</h2>
-            <p>Placeholder card for future workflow build.</p>
+            <p>Stage-based denture appointment note builder.</p>
           </div>
           </article>
 
-          <article class="card card-soon">
+          <article class="card clickable" data-template-key="endo" role="button" tabindex="0" aria-label="Open Endodontics template">
           <div class="icon" aria-hidden="true"><img src="assets/icons-health/devices__syringe.svg" alt="" /></div>
           <div>
-            <p class="card-type">Coming Soon</p>
+            <p class="card-type">Template</p>
             <h2>Endo</h2>
-            <p>Template scaffold not yet built.</p>
+            <p>Pre-op to post-op endodontic note builder.</p>
           </div>
           </article>
 
@@ -101,10 +101,10 @@
           </div>
           </article>
 
-          <article class="card card-soon">
+          <article class="card clickable" data-template-key="freestyle-appointment" role="button" tabindex="0" aria-label="Open Freestyle Appointment template">
           <div class="icon" aria-hidden="true"><img src="assets/icons-health/shapes__star-large.svg" alt="" /></div>
           <div>
-            <p class="card-type">Coming Soon</p>
+            <p class="card-type">Template</p>
             <h2>Freestyle Appointment</h2>
             <p>Custom freeform note workflow.</p>
           </div>
@@ -119,73 +119,16 @@
         </div>
 
         <div id="examStepRoot" class="pathway-grid">
-          <button class="path-big-btn" id="examNewBtn" type="button">
-            <span class="path-big-btn-inner">
-              <span class="path-big-btn-icon" aria-hidden="true"><img src="assets/icons-health/specialties__medical-records.svg" alt="" /></span>
-              <span>New</span>
-            </span>
-          </button>
-          <button class="path-big-btn" id="examExistingBtn" type="button">
-            <span class="path-big-btn-inner">
-              <span class="path-big-btn-icon" aria-hidden="true"><img src="assets/icons-health/objects__calendar.svg" alt="" /></span>
-              <span>Existing</span>
-            </span>
-          </button>
-        </div>
-
-        <div id="examStepNew" class="pathway-grid hidden">
           <button class="path-big-btn" data-template-key="new-patient-exam" type="button">
             <span class="path-big-btn-inner">
               <span class="path-big-btn-icon" aria-hidden="true"><img src="assets/icons-health/devices__stethoscope.svg" alt="" /></span>
-              <span>Adult</span>
+              <span>Adult Exam</span>
             </span>
           </button>
-          <button class="path-big-btn" id="examNewChildBtn" type="button">
+          <button class="path-big-btn" data-template-key="child-exam" type="button">
             <span class="path-big-btn-inner">
               <span class="path-big-btn-icon" aria-hidden="true"><img src="assets/icons-health/people__child-care.svg" alt="" /></span>
-              <span>Child</span>
-            </span>
-          </button>
-        </div>
-
-        <div id="examStepNewChild" class="pathway-grid hidden">
-          <button class="path-big-btn" data-template-key="child-new-0-6" type="button">
-            <span class="path-big-btn-inner">
-              <span class="path-big-btn-icon" aria-hidden="true"><img src="assets/icons-health/people__baby-0306m.svg" alt="" /></span>
-              <span>0-6</span>
-            </span>
-          </button>
-          <button class="path-big-btn" data-template-key="child-new-6-8" type="button">
-            <span class="path-big-btn-inner">
-              <span class="path-big-btn-icon" aria-hidden="true"><img src="assets/icons-health/people__child-care.svg" alt="" /></span>
-              <span>6-8</span>
-            </span>
-          </button>
-          <button class="path-big-btn" data-template-key="child-new-9-12" type="button">
-            <span class="path-big-btn-inner">
-              <span class="path-big-btn-icon" aria-hidden="true"><img src="assets/icons-health/people__child-cognition.svg" alt="" /></span>
-              <span>9-12</span>
-            </span>
-          </button>
-          <button class="path-big-btn" data-template-key="child-new-12-18" type="button">
-            <span class="path-big-btn-inner">
-              <span class="path-big-btn-icon" aria-hidden="true"><img src="assets/icons-health/people__child-program.svg" alt="" /></span>
-              <span>12-18</span>
-            </span>
-          </button>
-        </div>
-
-        <div id="examStepExisting" class="pathway-grid hidden">
-          <button class="path-big-btn" data-template-key="recall-exam" type="button">
-            <span class="path-big-btn-inner">
-              <span class="path-big-btn-icon" aria-hidden="true"><img src="assets/icons-health/objects__calendar.svg" alt="" /></span>
-              <span>Adult</span>
-            </span>
-          </button>
-          <button class="path-big-btn" data-template-key="child-recall-easy" type="button">
-            <span class="path-big-btn-inner">
-              <span class="path-big-btn-icon" aria-hidden="true"><img src="assets/icons-health/people__child-care.svg" alt="" /></span>
-              <span>Child</span>
+              <span>Child Exam</span>
             </span>
           </button>
         </div>
@@ -269,6 +212,7 @@
         </div>
         <div class="header-actions">
           <select id="templatePicker" class="secondary template-picker" aria-label="Switch template"></select>
+          <button id="saveDefaultsBtn" class="secondary" type="button">Save Defaults</button>
           <button id="resetTemplateBtn" class="secondary" type="button">Reset Template</button>
           <button id="backBtn" class="secondary" type="button">Back to Templates</button>
         </div>
@@ -281,6 +225,7 @@
           <div class="preview-head">
             <h2>Generated Note</h2>
             <div class="copy-tools">
+              <button id="undoActionBtn" class="secondary" type="button" disabled>Undo</button>
               <button id="copyNoteBtn" class="primary" type="button">Copy Note</button>
               <span id="copyWarning" class="copy-warning hidden" aria-live="polite"></span>
             </div>
@@ -301,7 +246,7 @@
       <div id="toothGrid" class="tooth-grid"></div>
 
       <div class="surface-section">
-        <p class="row-label">Surfaces (optional)</p>
+        <p class="row-label">Surfaces (selected tooth)</p>
         <div id="surfaceGrid" class="surface-grid"></div>
       </div>
 
