@@ -1,4 +1,24 @@
-﻿function createRestorationsSection(title) {
+﻿const RESTORATION_COMPOSITE_MATERIAL_OPTIONS = [
+  "A2 Ganeial Flo",
+  "A2 Gaenial Flo + Gaenial Posterior",
+  "A2 Gaenial Flo + Gaenial Anterior + A2 CR",
+  "A2 Gaenail Flo + Clearfil Majesty",
+  "Other"
+];
+function createCompositeMaterialChoiceRow() {
+  return {
+    type: "choice_text",
+    label: "Composite material",
+    valuePrefix: "Composite material: ",
+    selected: 0,
+    options: RESTORATION_COMPOSITE_MATERIAL_OPTIONS,
+    customOptionIndex: RESTORATION_COMPOSITE_MATERIAL_OPTIONS.length - 1,
+    customValue: "",
+    customPlaceholder: "Enter composite material",
+    showWhen: "cr"
+  };
+}
+function createRestorationsSection(title) {
   return {
     id: "restorations",
     title,
@@ -7,31 +27,19 @@
       { type: "choice", label: "Resto type", valuePrefix: "", selected: 1, required: true, options: ["GIC Resto", "CR Resto"], modeValues: ["gic", "cr"], deletable: false },
       { type: "tooth_surface_picker", label: "Tooth and surfaces", valuePrefix: "Teeth: ", entries: [] },
       { type: "choice", label: "Reason for resto", valuePrefix: "Reason for resto: ", selected: 0, options: ["Caries", "Defective Restoration", "Lost Restoration", "Chipped tooth", "Aesthetics", "Sensitivity", "TBA", "TBA lesion"] },
-      {
-        type: "choice",
-        label: "LA",
-        valuePrefix: "",
-        selected: 0,
-        options: [
-          "No LA",
-          "10% topical Xylocaine, 2.2mL",
-          "10% topical Xylocaine, 4.4mL",
-          "No topical",
-          "no topical, 2.2mL",
-          "2.2mL",
-          "1:80k adr lidocaine via IDB",
-          "1:100k adr articaine via infils",
-          "1:80k adr lidocaine via IDB, 2.2mL 1:100k adr articaine via infils",
-          "1:80k adr lidocaine via infils",
-          "Other"
-        ]
-      },
+      ...createLocalAnaestheticRows({
+        topicalSelected: -1,
+        methodLabel: "LA method",
+        methodValuePrefix: "LA: ",
+        methodOptions: OPTION_SETS.laMethodStandard,
+        methodCustomPlaceholder: "Enter LA details"
+      }),
       { type: "line", text: "Caries freed and cavity prepped" },
       { type: "line", text: "10% Polyacrylic Acid Dentine Conditioner applied", showWhen: "gic" },
       { type: "line", text: "37% Phosphoric Acid Etch applied", showWhen: "cr" },
       { type: "choice", label: "GIC material", valuePrefix: "", selected: 0, showWhen: "gic", options: ["Riva LC placed and set"] },
       { type: "choice", label: "Bond", valuePrefix: "", selected: 0, showWhen: "cr", options: ["Scotchbond applied, dried and cured", "G-premio bond applied, dried and cured", "clearfil se2 applied, dried and cured"] },
-      { type: "text", label: "Composite material", value: "", placeholder: "Enter material", suffix: "placed and cured", showWhen: "cr" },
+      createCompositeMaterialChoiceRow(),
       { type: "choice", label: "Finish", valuePrefix: "", selected: 0, options: ["Restoration polished and bite checked", "Restoration polished", "Restorations polished and bite checked"] }
     ]
   };
@@ -93,7 +101,8 @@ const OPTION_SETS = {
   nilPainSensitivityOther: [WORDING_STANDARD.terms.nil, "Pain", "Sensitivity", WORDING_STANDARD.terms.other],
   nilMildModerateSevere: [WORDING_STANDARD.terms.nil, "Mild", "Moderate", "Severe"],
   laMethodIdb: [WORDING_STANDARD.terms.nil, "Infiltration", "IDB", "IDB + Infiltration", WORDING_STANDARD.terms.other],
-  laMethodIanb: [WORDING_STANDARD.terms.nil, "Infiltration", "IANB", "IANB + Infiltration", WORDING_STANDARD.terms.other]
+  laMethodIanb: [WORDING_STANDARD.terms.nil, "Infiltration", "IANB", "IANB + Infiltration", WORDING_STANDARD.terms.other],
+  laMethodStandard: [WORDING_STANDARD.terms.nil, "Infiltration", "IDB", "IDB + Infiltration", "IANB", "IANB + Infiltration", WORDING_STANDARD.terms.other]
 };
 
 function createRadiographRows(config = {}) {
@@ -182,7 +191,7 @@ function createLocalAnaestheticRows(options = {}) {
     methodValuePrefix = "LA: ",
     methodOptions = [...WORDING_STANDARD.la.methodOptions],
     methodSelected = 0,
-    methodCustomOptionIndex = 4,
+    methodCustomOptionIndex = null,
     methodCustomPlaceholder = "Enter LA method",
     siteLabel = "Site",
     siteValuePrefix = "Site: ",
@@ -198,10 +207,18 @@ function createLocalAnaestheticRows(options = {}) {
     volumeCustomOptionIndex = 8,
     volumeCustomPlaceholder = "Enter volume",
     includeAgentAndVolume = true,
-    hideDetailsWhen = WORDING_STANDARD.terms.nil
+    hideDetailsWhen = WORDING_STANDARD.terms.nil,
+    includeIdbSideSelector = true,
+    idbSideLabel = "IDB side",
+    idbSideValuePrefix = "IDB side: ",
+    idbSideOptions = ["LHS", "RHS"],
+    idbMethodValues = ["IDB", "IDB + Infiltration"]
   } = options;
 
   const rows = [];
+  const resolvedMethodCustomOptionIndex = Number.isInteger(methodCustomOptionIndex)
+    ? methodCustomOptionIndex
+    : Math.max(0, methodOptions.length - 1);
 
   if (includeTopical) {
     rows.push({
@@ -219,12 +236,27 @@ function createLocalAnaestheticRows(options = {}) {
       valuePrefix: methodValuePrefix,
       selected: methodSelected,
       options: methodOptions,
-      customOptionIndex: methodCustomOptionIndex,
+      customOptionIndex: resolvedMethodCustomOptionIndex,
       customValue: "",
       customPlaceholder: methodCustomPlaceholder
     });
 
   const detailShowIf = { label: methodLabel, notEquals: hideDetailsWhen };
+  const siteShowIf = {
+    label: methodLabel,
+    excludesAny: [hideDetailsWhen, ...(Array.isArray(idbMethodValues) && idbMethodValues.length > 0 ? [idbMethodValues[0]] : [])]
+  };
+
+  if (includeIdbSideSelector) {
+    rows.push({
+      type: "choice",
+      label: idbSideLabel,
+      valuePrefix: idbSideValuePrefix,
+      selected: -1,
+      options: idbSideOptions,
+      showIf: { label: methodLabel, includesAny: idbMethodValues }
+    });
+  }
 
   if (includeSitePicker) {
     rows.push({
@@ -234,7 +266,7 @@ function createLocalAnaestheticRows(options = {}) {
       selectedMode: "teeth",
       entries: [],
       selectOptionLabel: "Select site",
-      showIf: detailShowIf
+      showIf: siteShowIf
     });
   }
 
@@ -266,6 +298,266 @@ function createLocalAnaestheticRows(options = {}) {
   }
 
   return rows;
+}
+
+function getLocalAnaestheticSectionConfig(sectionId) {
+  switch (sectionId) {
+    case "endo-la":
+      return {
+        methodLabel: "Technique",
+        methodValuePrefix: "Technique: ",
+        methodOptions: OPTION_SETS.laMethodStandard
+      };
+    case "exo-adult-la":
+      return {
+        methodLabel: "LA method",
+        methodValuePrefix: "LA: ",
+        methodOptions: OPTION_SETS.laMethodStandard
+      };
+    case "exo-child-la":
+      return {
+        topicalOptions: ["10% topical xylocaine applied", WORDING_STANDARD.la.noTopicalRequired],
+        methodLabel: "LA method",
+        methodValuePrefix: "LA: ",
+        methodOptions: OPTION_SETS.laMethodStandard,
+        methodCustomPlaceholder: "Enter LA detail"
+      };
+    case "crown-prep-la":
+    case "crown-fit-la":
+    case "crown-recement-la":
+      return {
+        topicalSelected: -1,
+        methodLabel: "LA method",
+        methodValuePrefix: "LA: ",
+        methodOptions: OPTION_SETS.laMethodStandard
+      };
+    case "perio-la":
+    case "perio-emergency-la":
+      return {
+        methodLabel: "LA",
+        methodValuePrefix: "LA: ",
+        methodOptions: OPTION_SETS.laMethodStandard,
+        methodCustomPlaceholder: "Enter LA details"
+      };
+    default:
+      return null;
+  }
+}
+
+function getChoiceSelectedTextSafe(row) {
+  if (!row || !Array.isArray(row.options) || !Number.isInteger(row.selected) || row.selected < 0) {
+    return "";
+  }
+  return row.options[row.selected] || "";
+}
+
+function findRowByLabel(rows, label) {
+  if (!Array.isArray(rows)) {
+    return null;
+  }
+  return rows.find((row) => row && row.label === label) || null;
+}
+
+function mapLaMethodSelectionFromText(text, methodOptions) {
+  if (!text || !Array.isArray(methodOptions)) {
+    return -1;
+  }
+  const value = text.toLowerCase();
+
+  const tryCandidate = (candidate) => methodOptions.findIndex((option) => option === candidate);
+
+  if (value.includes("no la required") || value.includes("no la") || value === WORDING_STANDARD.terms.nil.toLowerCase()) {
+    const nilIndex = tryCandidate(WORDING_STANDARD.terms.nil);
+    if (nilIndex >= 0) return nilIndex;
+  }
+  if ((value.includes("ianb") || value.includes("idb")) && value.includes("infil")) {
+    if (value.includes("ianb")) {
+      const ianbInfilIndex = tryCandidate("IANB + Infiltration");
+      if (ianbInfilIndex >= 0) return ianbInfilIndex;
+    }
+    if (value.includes("idb")) {
+      const idbInfilIndex = tryCandidate("IDB + Infiltration");
+      if (idbInfilIndex >= 0) return idbInfilIndex;
+    }
+  }
+  if (value.includes("ianb")) {
+    const ianbIndex = tryCandidate("IANB");
+    if (ianbIndex >= 0) return ianbIndex;
+  }
+  if (value.includes("idb")) {
+    const idbIndex = tryCandidate("IDB");
+    if (idbIndex >= 0) return idbIndex;
+  }
+  if (value.includes("infil")) {
+    const infilIndex = tryCandidate("Infiltration");
+    if (infilIndex >= 0) return infilIndex;
+  }
+
+  return methodOptions.findIndex((option) => option.toLowerCase() === value.trim());
+}
+
+function mapLaAgentSelectionFromText(text, agentOptions) {
+  if (!text || !Array.isArray(agentOptions)) {
+    return -1;
+  }
+  const value = text.toLowerCase();
+  if (value.includes("articaine")) {
+    return agentOptions.findIndex((option) => option.toLowerCase().includes("articaine"));
+  }
+  if (value.includes("lidocaine")) {
+    return agentOptions.findIndex((option) => option.toLowerCase().includes("lidocaine"));
+  }
+  if (value.includes("mepivacaine")) {
+    return agentOptions.findIndex((option) => option.toLowerCase().includes("mepivacaine"));
+  }
+  return -1;
+}
+
+function mapLaVolumeSelectionFromText(text, volumeOptions) {
+  if (!text || !Array.isArray(volumeOptions)) {
+    return -1;
+  }
+  const match = text.match(/(\d+(?:\.\d+)?)\s?mL/i);
+  if (!match) {
+    return -1;
+  }
+  const parsedValue = Number.parseFloat(match[1]);
+  if (Number.isNaN(parsedValue)) {
+    return -1;
+  }
+
+  return volumeOptions.findIndex((option) => {
+    const optionMatch = String(option).match(/(\d+(?:\.\d+)?)\s?mL/i);
+    if (!optionMatch) {
+      return false;
+    }
+    const optionValue = Number.parseFloat(optionMatch[1]);
+    return Number.isFinite(optionValue) && Math.abs(optionValue - parsedValue) < 0.001;
+  });
+}
+
+function mapLaSideSelectionFromText(text, sideOptions) {
+  if (!text || !Array.isArray(sideOptions)) {
+    return -1;
+  }
+  const value = text.toLowerCase();
+  if (value.includes("lhs") || value.includes("left")) {
+    return sideOptions.findIndex((option) => option.toLowerCase().includes("lhs") || option.toLowerCase().includes("left"));
+  }
+  if (value.includes("rhs") || value.includes("right")) {
+    return sideOptions.findIndex((option) => option.toLowerCase().includes("rhs") || option.toLowerCase().includes("right"));
+  }
+  return -1;
+}
+
+function normalizeLocalAnaestheticSections(sections) {
+  if (!Array.isArray(sections)) {
+    return sections;
+  }
+
+  sections.forEach((section) => {
+    if (!section || !section.id) {
+      return;
+    }
+    const config = getLocalAnaestheticSectionConfig(section.id);
+    if (!config || !Array.isArray(section.rows)) {
+      return;
+    }
+
+    const existingRows = section.rows;
+    const normalizedRows = createLocalAnaestheticRows(config);
+
+    const methodLabel = config.methodLabel || "LA method";
+    const idbSideLabel = config.idbSideLabel || "IDB side";
+    const siteLabel = config.siteLabel || "Site";
+    const agentLabel = config.agentLabel || "Agent";
+    const volumeLabel = config.volumeLabel || "Vol";
+
+    const existingTopicalRow = existingRows.find((row) => row && row.type === "choice" && (row.label || "").toLowerCase().includes("topical"));
+    const existingMethodRow = existingRows.find((row) => row && row.type === "choice_text" && ((row.label || "") === methodLabel || /la|technique/i.test(row.label || "")));
+    const existingSideRow = existingRows.find((row) => row && row.type === "choice" && ((row.label || "") === idbSideLabel || (row.label || "").toLowerCase().includes("side")));
+    const existingSiteRow = existingRows.find((row) => row && row.type === "tooth_picker" && ((row.label || "") === siteLabel || (row.label || "").toLowerCase().includes("site")));
+    const existingAgentRow = existingRows.find((row) => row && row.type === "choice_text" && ((row.label || "") === agentLabel || (row.label || "").toLowerCase().includes("agent")));
+    const existingVolumeRow = existingRows.find((row) => row && row.type === "choice_text" && ((row.label || "") === volumeLabel || (row.label || "").toLowerCase().startsWith("vol")));
+
+    const existingMethodText = getChoiceSelectedTextSafe(existingMethodRow);
+    const existingMethodCustom = existingMethodRow && existingMethodRow.selected === existingMethodRow.customOptionIndex
+      ? (existingMethodRow.customValue || "")
+      : "";
+    const existingSideText = getChoiceSelectedTextSafe(existingSideRow);
+    const existingAgentText = getChoiceSelectedTextSafe(existingAgentRow);
+    const existingAgentCustom = existingAgentRow && existingAgentRow.selected === existingAgentRow.customOptionIndex
+      ? (existingAgentRow.customValue || "")
+      : "";
+    const existingVolumeText = getChoiceSelectedTextSafe(existingVolumeRow);
+    const existingVolumeCustom = existingVolumeRow && existingVolumeRow.selected === existingVolumeRow.customOptionIndex
+      ? (existingVolumeRow.customValue || "")
+      : "";
+    const sourceText = [existingMethodText, existingMethodCustom, existingSideText, existingAgentText, existingAgentCustom, existingVolumeText, existingVolumeCustom].join(" ");
+
+    const normalizedTopicalRow = normalizedRows.find((row) => row && row.type === "choice" && row.label === (config.topicalLabel || "Topical"));
+    if (normalizedTopicalRow && existingTopicalRow) {
+      const existingTopicalText = getChoiceSelectedTextSafe(existingTopicalRow).toLowerCase();
+      if (existingTopicalText.includes("no topical")) {
+        const noTopicalIndex = normalizedTopicalRow.options.findIndex((option) => option.toLowerCase().includes("no topical"));
+        if (noTopicalIndex >= 0) normalizedTopicalRow.selected = noTopicalIndex;
+      } else if (existingTopicalText.includes("topical")) {
+        const topicalIndex = normalizedTopicalRow.options.findIndex((option) => option.toLowerCase().includes("topical xylocaine applied"));
+        if (topicalIndex >= 0) normalizedTopicalRow.selected = topicalIndex;
+      }
+    }
+
+    const normalizedMethodRow = findRowByLabel(normalizedRows, methodLabel);
+    if (normalizedMethodRow) {
+      const mappedMethodIndex = mapLaMethodSelectionFromText(existingMethodText || sourceText, normalizedMethodRow.options);
+      if (mappedMethodIndex >= 0) {
+        normalizedMethodRow.selected = mappedMethodIndex;
+      } else if (existingMethodCustom.trim()) {
+        normalizedMethodRow.selected = normalizedMethodRow.customOptionIndex;
+        normalizedMethodRow.customValue = existingMethodCustom;
+      }
+    }
+
+    const normalizedSiteRow = findRowByLabel(normalizedRows, siteLabel);
+    if (normalizedSiteRow && existingSiteRow && Array.isArray(existingSiteRow.entries)) {
+      normalizedSiteRow.entries = [...existingSiteRow.entries];
+      normalizedSiteRow.selectedMode = existingSiteRow.selectedMode === "nil" ? "nil" : (existingSiteRow.entries.length > 0 ? "teeth" : "none");
+    }
+
+    const normalizedSideRow = findRowByLabel(normalizedRows, idbSideLabel);
+    if (normalizedSideRow) {
+      const mappedSideIndex = mapLaSideSelectionFromText(existingSideText || sourceText, normalizedSideRow.options);
+      if (mappedSideIndex >= 0) {
+        normalizedSideRow.selected = mappedSideIndex;
+      }
+    }
+
+    const normalizedAgentRow = findRowByLabel(normalizedRows, agentLabel);
+    if (normalizedAgentRow) {
+      const mappedAgentIndex = mapLaAgentSelectionFromText(existingAgentText || sourceText, normalizedAgentRow.options);
+      if (mappedAgentIndex >= 0) {
+        normalizedAgentRow.selected = mappedAgentIndex;
+      } else if (existingAgentCustom.trim()) {
+        normalizedAgentRow.selected = normalizedAgentRow.customOptionIndex;
+        normalizedAgentRow.customValue = existingAgentCustom;
+      }
+    }
+
+    const normalizedVolumeRow = findRowByLabel(normalizedRows, volumeLabel);
+    if (normalizedVolumeRow) {
+      const mappedVolumeIndex = mapLaVolumeSelectionFromText(existingVolumeText || sourceText, normalizedVolumeRow.options);
+      if (mappedVolumeIndex >= 0) {
+        normalizedVolumeRow.selected = mappedVolumeIndex;
+      } else if (existingVolumeCustom.trim()) {
+        normalizedVolumeRow.selected = normalizedVolumeRow.customOptionIndex;
+        normalizedVolumeRow.customValue = existingVolumeCustom;
+      }
+    }
+
+    section.rows = normalizedRows;
+  });
+
+  return sections;
 }
 
 function createPainAssessmentRows(config = {}) {
@@ -558,6 +850,29 @@ function createNextVisitChoiceRow(config = {}) {
     customOptionIndex: resolvedCustomIndex,
     customValue,
     customPlaceholder
+  };
+}
+
+function createPrescriptionSection(sectionId = "prescriptions", title = "Prescriptions") {
+  return {
+    id: sectionId,
+    title,
+    included: false,
+    rows: [
+      {
+        type: "multi_choice",
+        label: "Prescription",
+        valuePrefix: "Prescription: ",
+        selected: [],
+        options: [
+          "Allergies checked. Rx: Augmenin Duo Forte 875/125mg 10 tabs, one every 12hrs until finished",
+          "Allergies checked. Rx: Amoxicillin 500mg, 20 caps, one every 8hrs until finished",
+          "Allergies checked. Rx: Panadeine Forte 500mg/30mg 20 caps, one or two every 6-8 hrs as needed, no driving",
+          "Allergies checked. Rx: Clindamycin 150mg 24 caps, two caps every 8hrs until finished",
+          "Allergies checked. Rx: Metronidazole 400mg 21 tabs, one every 8hrs until done"
+        ]
+      }
+    ]
   };
 }
 
@@ -1289,7 +1604,8 @@ function createFreestyleAppointmentTemplateSections() {
           deletable: false
         }
       ]
-    }
+    },
+    createPrescriptionSection("freestyle-prescriptions")
   ];
 }
 
@@ -1356,7 +1672,8 @@ function createEndodonticsTemplateSections() {
       included: true,
       rows: createLocalAnaestheticRows({
         methodLabel: "Technique",
-        methodValuePrefix: "Technique: "
+        methodValuePrefix: "Technique: ",
+        methodOptions: OPTION_SETS.laMethodStandard
       })
     },
     {
@@ -1510,7 +1827,8 @@ function createEndodonticsTemplateSections() {
           customPlaceholder: "Enter next visit detail"
         })
       ]
-    }
+    },
+    createPrescriptionSection("endo-prescriptions")
   ];
 }
 
@@ -1651,7 +1969,7 @@ function createExtractionAdultTemplateSections() {
       rows: createLocalAnaestheticRows({
         methodLabel: "LA method",
         methodValuePrefix: "LA: ",
-        methodOptions: OPTION_SETS.laMethodIdb
+        methodOptions: OPTION_SETS.laMethodStandard
       })
     },
     {
@@ -1712,7 +2030,8 @@ function createExtractionAdultTemplateSections() {
           customPlaceholder: "Enter next visit plan"
         })
       ]
-    }
+    },
+    createPrescriptionSection("exo-adult-prescriptions")
   ];
 }
 
@@ -1807,19 +2126,10 @@ function createExtractionChildTemplateSections() {
       included: true,
       rows: createLocalAnaestheticRows({
         topicalOptions: ["10% topical xylocaine applied", WORDING_STANDARD.la.noTopicalRequired],
-        methodLabel: "LA used",
+        methodLabel: "LA method",
         methodValuePrefix: "LA: ",
-        methodOptions: [
-          "no LA required",
-          "0.5mL 2% 1:80k adr lidocaine via infils",
-          "1mL 2.2mL 2% 1:80k adr lidocaine via infils",
-          "2.2mL 2% 1:80k adr lidocaine via infils",
-          WORDING_STANDARD.terms.other
-        ],
-        methodCustomOptionIndex: 4,
-        methodCustomPlaceholder: "Enter LA detail",
-        includeSitePicker: false,
-        includeAgentAndVolume: false
+        methodOptions: OPTION_SETS.laMethodStandard,
+        methodCustomPlaceholder: "Enter LA detail"
       })
     },
     {
@@ -1860,7 +2170,8 @@ function createExtractionChildTemplateSections() {
           customPlaceholder: "Enter next visit plan"
         })
       ]
-    }
+    },
+    createPrescriptionSection("exo-child-prescriptions")
   ];
 }
 
@@ -1916,7 +2227,7 @@ function createCrownPrepTemplateSections() {
         topicalSelected: -1,
         methodLabel: "LA method",
         methodValuePrefix: "LA: ",
-        methodOptions: OPTION_SETS.laMethodIanb
+        methodOptions: OPTION_SETS.laMethodStandard
       })
     },
     {
@@ -2023,7 +2334,7 @@ function createCrownFitTemplateSections() {
         topicalSelected: -1,
         methodLabel: "LA method",
         methodValuePrefix: "LA: ",
-        methodOptions: OPTION_SETS.laMethodIanb
+        methodOptions: OPTION_SETS.laMethodStandard
       })
     },
     {
@@ -2152,7 +2463,7 @@ function createCrownRecementTemplateSections() {
         topicalSelected: -1,
         methodLabel: "LA method",
         methodValuePrefix: "LA: ",
-        methodOptions: OPTION_SETS.laMethodIanb
+        methodOptions: OPTION_SETS.laMethodStandard
       })
     },
     {
@@ -2395,14 +2706,10 @@ function createPeriodontalTreatmentTemplateSections() {
       title: "LA",
       included: true,
       rows: createLocalAnaestheticRows({
-        includeTopical: false,
         methodLabel: "LA",
         methodValuePrefix: "LA: ",
-        methodOptions: OPTION_SETS.laMethodIanb,
-        methodCustomOptionIndex: 4,
-        methodCustomPlaceholder: "Enter LA details",
-        includeSitePicker: false,
-        includeAgentAndVolume: false
+        methodOptions: OPTION_SETS.laMethodStandard,
+        methodCustomPlaceholder: "Enter LA details"
       })
     },
     {
@@ -2489,7 +2796,8 @@ function createPeriodontalTreatmentTemplateSections() {
           placeholder: "Enter notes here..."
         }
       ]
-    }
+    },
+    createPrescriptionSection("perio-prescriptions")
   ];
 }
 
@@ -2574,11 +2882,8 @@ function createPeriodontalEmergencyTemplateSections() {
       rows: createLocalAnaestheticRows({
         methodLabel: "LA",
         methodValuePrefix: "LA: ",
-        methodOptions: [WORDING_STANDARD.terms.nil, "Infiltration", "IDB", "IDB + Infiltration", WORDING_STANDARD.terms.other],
-        methodCustomOptionIndex: 4,
-        methodCustomPlaceholder: "Enter LA details",
-        includeSitePicker: false,
-        includeAgentAndVolume: false
+        methodOptions: OPTION_SETS.laMethodStandard,
+        methodCustomPlaceholder: "Enter LA details"
       })
     },
     {
@@ -2609,7 +2914,8 @@ function createPeriodontalEmergencyTemplateSections() {
           customPlaceholder: "Enter next visit"
         })
       ]
-    }
+    },
+    createPrescriptionSection("perio-emergency-prescriptions")
   ];
 }
 
@@ -2703,8 +3009,14 @@ const copyWarningEl = document.getElementById("copyWarning");
 const randomCorgiIconEl = document.getElementById("randomCorgiIcon");
 const landingBrandTitleEl = document.getElementById("landingBrandTitle");
 const corgiSwapBtnEl = document.getElementById("corgiSwapBtn");
+const landingSettingsBtnEl = document.getElementById("landingSettingsBtn");
 const landingClockTimeEl = document.getElementById("landingClockTime");
 const landingClockDateEl = document.getElementById("landingClockDate");
+const settingsModalEl = document.getElementById("settingsModal");
+const closeSettingsModalBtnEl = document.getElementById("closeSettingsModalBtn");
+const closeSettingsBtnEl = document.getElementById("closeSettingsBtn");
+const resetAllDefaultsBtnEl = document.getElementById("resetAllDefaultsBtn");
+const settingsStatusEl = document.getElementById("settingsStatus");
 const toothModal = document.getElementById("toothModal");
 const toothModalTitleEl = document.getElementById("toothModalTitle");
 const toothGridEl = document.getElementById("toothGrid");
@@ -2915,6 +3227,56 @@ function persistTemplateDefaultsMap() {
   }
 }
 
+function setSettingsStatus(message, isError = false) {
+  if (!settingsStatusEl) {
+    return;
+  }
+  if (!message) {
+    settingsStatusEl.textContent = "";
+    settingsStatusEl.classList.add("hidden");
+    settingsStatusEl.classList.remove("error");
+    return;
+  }
+  settingsStatusEl.textContent = message;
+  settingsStatusEl.classList.remove("hidden");
+  settingsStatusEl.classList.toggle("error", isError);
+}
+
+function openSettingsModal() {
+  if (!settingsModalEl) {
+    return;
+  }
+  setSettingsStatus("");
+  settingsModalEl.classList.remove("hidden");
+  settingsModalEl.setAttribute("aria-hidden", "false");
+}
+
+function closeSettingsModal() {
+  if (!settingsModalEl) {
+    return;
+  }
+  settingsModalEl.classList.add("hidden");
+  settingsModalEl.setAttribute("aria-hidden", "true");
+  setSettingsStatus("");
+}
+
+function resetAllTemplateDefaults() {
+  const confirmed = window.confirm("Reset all templates to built-in defaults? This removes all saved default customizations.");
+  if (!confirmed) {
+    return;
+  }
+
+  templateDefaultsMap = {};
+  const success = persistTemplateDefaultsMap();
+  if (!success) {
+    setSettingsStatus("Could not reset defaults. Please try again.", true);
+    return;
+  }
+
+  loadTemplate(currentTemplateKey);
+  setSettingsStatus("All templates reset to defaults.");
+}
+
 function clearDeletedFlagsInSections(sections) {
   if (!Array.isArray(sections)) {
     return sections;
@@ -3037,6 +3399,201 @@ function mergeTemplateSectionsWithSavedDefaults(schemaSections, savedSections) {
   });
 
   return schemaSections;
+}
+
+function normalizeRestorationCompositeMaterialRows(sections) {
+  if (!Array.isArray(sections)) {
+    return sections;
+  }
+
+  sections.forEach((section) => {
+    if (!section || section.id !== "restorations" || !Array.isArray(section.rows)) {
+      return;
+    }
+
+    const existingRows = section.rows.filter((row) => row && row.label === "Composite material");
+    let preservedText = "";
+
+    existingRows.forEach((row) => {
+      if (row.type === "choice_text") {
+        const selectedOption = Array.isArray(row.options) && Number.isInteger(row.selected) ? (row.options[row.selected] || "") : "";
+        if (row.selected === row.customOptionIndex) {
+          const custom = (row.customValue || "").trim();
+          if (custom) preservedText = custom;
+        } else if (selectedOption) {
+          preservedText = selectedOption;
+        }
+      } else if (row.type === "text") {
+        const value = (row.value || "").trim();
+        if (value) {
+          preservedText = value;
+        }
+      }
+    });
+
+    section.rows = section.rows.filter((row) => !(row && row.label === "Composite material"));
+
+    const normalizedRow = createCompositeMaterialChoiceRow();
+    if (preservedText) {
+      const mappedIndex = RESTORATION_COMPOSITE_MATERIAL_OPTIONS.indexOf(preservedText);
+      if (mappedIndex >= 0) {
+        normalizedRow.selected = mappedIndex;
+      } else {
+        normalizedRow.selected = normalizedRow.customOptionIndex;
+        normalizedRow.customValue = preservedText;
+      }
+    }
+
+    const bondIndex = section.rows.findIndex((row) => row && row.label === "Bond");
+    const finishIndex = section.rows.findIndex((row) => row && row.label === "Finish");
+    const insertIndex = bondIndex >= 0
+      ? bondIndex + 1
+      : (finishIndex >= 0 ? finishIndex : section.rows.length);
+    section.rows.splice(insertIndex, 0, normalizedRow);
+  });
+
+  return sections;
+}
+
+function normalizeRestorationLocalAnaestheticRows(sections) {
+  if (!Array.isArray(sections)) {
+    return sections;
+  }
+
+  const laConfig = {
+    topicalSelected: -1,
+    methodLabel: "LA method",
+    methodValuePrefix: "LA: ",
+    methodOptions: OPTION_SETS.laMethodStandard,
+    methodCustomPlaceholder: "Enter LA details"
+  };
+
+  sections.forEach((section) => {
+    if (!section || section.id !== "restorations" || !Array.isArray(section.rows)) {
+      return;
+    }
+
+    const existingRows = section.rows;
+    const normalizedLaRows = createLocalAnaestheticRows(laConfig);
+
+    const topicalLabel = laConfig.topicalLabel || "Topical";
+    const methodLabel = laConfig.methodLabel || "LA method";
+    const idbSideLabel = laConfig.idbSideLabel || "IDB side";
+    const siteLabel = laConfig.siteLabel || "Site";
+    const agentLabel = laConfig.agentLabel || "Agent";
+    const volumeLabel = laConfig.volumeLabel || "Vol";
+
+    const legacyLaRow = existingRows.find((row) => row && row.type === "choice" && row.label === "LA");
+    const existingTopicalRow = existingRows.find((row) => row && row.type === "choice" && row.label === topicalLabel);
+    const existingMethodRow = existingRows.find((row) => row && row.type === "choice_text" && row.label === methodLabel);
+    const existingSideRow = existingRows.find((row) => row && row.type === "choice" && row.label === idbSideLabel);
+    const existingSiteRow = existingRows.find((row) => row && row.type === "tooth_picker" && row.label === siteLabel);
+    const existingAgentRow = existingRows.find((row) => row && row.type === "choice_text" && row.label === agentLabel);
+    const existingVolumeRow = existingRows.find((row) => row && row.type === "choice_text" && row.label === volumeLabel);
+
+    const legacyLaText = getChoiceSelectedTextSafe(legacyLaRow);
+    const existingTopicalText = getChoiceSelectedTextSafe(existingTopicalRow);
+    const existingMethodText = getChoiceSelectedTextSafe(existingMethodRow);
+    const existingMethodCustom = existingMethodRow && existingMethodRow.selected === existingMethodRow.customOptionIndex
+      ? (existingMethodRow.customValue || "")
+      : "";
+    const existingSideText = getChoiceSelectedTextSafe(existingSideRow);
+    const existingAgentText = getChoiceSelectedTextSafe(existingAgentRow);
+    const existingAgentCustom = existingAgentRow && existingAgentRow.selected === existingAgentRow.customOptionIndex
+      ? (existingAgentRow.customValue || "")
+      : "";
+    const existingVolumeText = getChoiceSelectedTextSafe(existingVolumeRow);
+    const existingVolumeCustom = existingVolumeRow && existingVolumeRow.selected === existingVolumeRow.customOptionIndex
+      ? (existingVolumeRow.customValue || "")
+      : "";
+    const sourceText = [
+      legacyLaText,
+      existingTopicalText,
+      existingMethodText,
+      existingMethodCustom,
+      existingSideText,
+      existingAgentText,
+      existingAgentCustom,
+      existingVolumeText,
+      existingVolumeCustom
+    ].join(" ");
+
+    const normalizedTopicalRow = findRowByLabel(normalizedLaRows, topicalLabel);
+    if (normalizedTopicalRow) {
+      const topicalSource = `${existingTopicalText} ${legacyLaText}`.toLowerCase();
+      if (topicalSource.includes("no topical")) {
+        const noTopicalIndex = normalizedTopicalRow.options.findIndex((option) => option.toLowerCase().includes("no topical"));
+        if (noTopicalIndex >= 0) normalizedTopicalRow.selected = noTopicalIndex;
+      } else if (topicalSource.includes("topical")) {
+        const topicalIndex = normalizedTopicalRow.options.findIndex((option) => option.toLowerCase().includes("topical xylocaine applied"));
+        if (topicalIndex >= 0) normalizedTopicalRow.selected = topicalIndex;
+      }
+    }
+
+    const normalizedMethodRow = findRowByLabel(normalizedLaRows, methodLabel);
+    if (normalizedMethodRow) {
+      const mappedMethodIndex = mapLaMethodSelectionFromText(existingMethodText || legacyLaText || sourceText, normalizedMethodRow.options);
+      if (mappedMethodIndex >= 0) {
+        normalizedMethodRow.selected = mappedMethodIndex;
+      } else if (existingMethodCustom.trim()) {
+        normalizedMethodRow.selected = normalizedMethodRow.customOptionIndex;
+        normalizedMethodRow.customValue = existingMethodCustom;
+      }
+    }
+
+    const normalizedSideRow = findRowByLabel(normalizedLaRows, idbSideLabel);
+    if (normalizedSideRow) {
+      const mappedSideIndex = mapLaSideSelectionFromText(existingSideText || sourceText, normalizedSideRow.options);
+      if (mappedSideIndex >= 0) {
+        normalizedSideRow.selected = mappedSideIndex;
+      }
+    }
+
+    const normalizedSiteRow = findRowByLabel(normalizedLaRows, siteLabel);
+    if (normalizedSiteRow && existingSiteRow && Array.isArray(existingSiteRow.entries)) {
+      normalizedSiteRow.entries = [...existingSiteRow.entries];
+      normalizedSiteRow.selectedMode = existingSiteRow.selectedMode === "nil" ? "nil" : (existingSiteRow.entries.length > 0 ? "teeth" : "none");
+    }
+
+    const normalizedAgentRow = findRowByLabel(normalizedLaRows, agentLabel);
+    if (normalizedAgentRow) {
+      const mappedAgentIndex = mapLaAgentSelectionFromText(existingAgentText || sourceText, normalizedAgentRow.options);
+      if (mappedAgentIndex >= 0) {
+        normalizedAgentRow.selected = mappedAgentIndex;
+      } else if (existingAgentCustom.trim()) {
+        normalizedAgentRow.selected = normalizedAgentRow.customOptionIndex;
+        normalizedAgentRow.customValue = existingAgentCustom;
+      }
+    }
+
+    const normalizedVolumeRow = findRowByLabel(normalizedLaRows, volumeLabel);
+    if (normalizedVolumeRow) {
+      const mappedVolumeIndex = mapLaVolumeSelectionFromText(existingVolumeText || sourceText, normalizedVolumeRow.options);
+      if (mappedVolumeIndex >= 0) {
+        normalizedVolumeRow.selected = mappedVolumeIndex;
+      } else if (existingVolumeCustom.trim()) {
+        normalizedVolumeRow.selected = normalizedVolumeRow.customOptionIndex;
+        normalizedVolumeRow.customValue = existingVolumeCustom;
+      }
+    }
+
+    const laLabelsToRemove = new Set([
+      "LA",
+      topicalLabel,
+      methodLabel,
+      idbSideLabel,
+      siteLabel,
+      agentLabel,
+      volumeLabel
+    ]);
+    section.rows = section.rows.filter((row) => !(row && typeof row.label === "string" && laLabelsToRemove.has(row.label)));
+
+    const reasonIndex = section.rows.findIndex((row) => row && row.label === "Reason for resto");
+    const insertIndex = reasonIndex >= 0 ? reasonIndex + 1 : section.rows.length;
+    section.rows.splice(insertIndex, 0, ...normalizedLaRows);
+  });
+
+  return sections;
 }
 
 function normalizeNewPatientWording(sections) {
@@ -3334,6 +3891,9 @@ function standardizeCommonTemplateWording(sections) {
     });
   });
 
+  normalizeRestorationCompositeMaterialRows(sections);
+  normalizeRestorationLocalAnaestheticRows(sections);
+  normalizeLocalAnaestheticSections(sections);
   return sections;
 }
 
@@ -3755,6 +4315,7 @@ function showBuilder(templateKey) {
   if (templateKey) {
     loadTemplate(templateKey);
   }
+  closeSettingsModal();
   if (landingTemplateGrid) {
     landingTemplateGrid.classList.remove("hidden");
   }
@@ -3767,6 +4328,7 @@ function showBuilder(templateKey) {
 function showLanding() {
   builderView.classList.add("hidden");
   landingView.classList.remove("hidden");
+  closeSettingsModal();
   if (landingTemplateGrid) {
     landingTemplateGrid.classList.remove("hidden");
   }
@@ -4943,6 +5505,31 @@ if (periodontalCard) {
   });
 }
 
+if (landingSettingsBtnEl) {
+  landingSettingsBtnEl.addEventListener("click", openSettingsModal);
+}
+if (closeSettingsModalBtnEl) {
+  closeSettingsModalBtnEl.addEventListener("click", closeSettingsModal);
+}
+if (closeSettingsBtnEl) {
+  closeSettingsBtnEl.addEventListener("click", closeSettingsModal);
+}
+if (resetAllDefaultsBtnEl) {
+  resetAllDefaultsBtnEl.addEventListener("click", resetAllTemplateDefaults);
+}
+if (settingsModalEl) {
+  settingsModalEl.addEventListener("click", (event) => {
+    if (event.target === settingsModalEl) {
+      closeSettingsModal();
+    }
+  });
+}
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && settingsModalEl && !settingsModalEl.classList.contains("hidden")) {
+    closeSettingsModal();
+  }
+});
+
 if (examFlowBackBtn) {
   examFlowBackBtn.addEventListener("click", examFlowBack);
 }
@@ -5006,6 +5593,8 @@ buildTemplatePicker();
 loadTemplate(currentTemplateKey);
 startLandingClock();
 setViewportMode("landing");
+
+
 
 
 

@@ -50,6 +50,7 @@ body {
 }
 
 .hero-landing {
+  position: relative;
   margin: 0;
   padding: 0.9rem 1rem;
   border: 1px solid #cfe2eb;
@@ -59,6 +60,37 @@ body {
     radial-gradient(circle at 95% 12%, rgba(112, 148, 222, 0.1), rgba(112, 148, 222, 0) 34%),
     #f8fcfe;
   min-height: 186px;
+}
+
+.landing-settings-btn {
+  position: absolute;
+  top: 0.6rem;
+  right: 0.7rem;
+  width: 2.15rem;
+  height: 2.15rem;
+  border: 1px solid #b9ced9;
+  border-radius: 10px;
+  background: #ffffffde;
+  color: #214353;
+  font: inherit;
+  font-size: 1.15rem;
+  font-weight: 800;
+  line-height: 1;
+  display: inline-grid;
+  place-items: center;
+  cursor: pointer;
+  transition: transform 140ms ease, background-color 140ms ease, border-color 140ms ease;
+}
+
+.landing-settings-btn:hover {
+  transform: translateY(-1px);
+  background: #fff;
+  border-color: #9ebac7;
+}
+
+.landing-settings-btn:focus-visible {
+  outline: 2px solid #84cfdc;
+  outline-offset: 2px;
 }
 
 .brand-row {
@@ -780,6 +812,68 @@ h1 {
   display: flex;
   justify-content: flex-end;
   gap: 0.45rem;
+}
+
+.settings-modal-card {
+  width: min(560px, 96vw);
+}
+
+.settings-body {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.settings-copy {
+  margin: 0;
+  color: #355466;
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+.settings-reset-btn {
+  justify-self: flex-start;
+}
+
+.settings-status {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #166070;
+}
+
+.settings-status.error {
+  color: #9f2c4a;
+}
+
+.settings-changelog {
+  margin-top: 0.3rem;
+  padding-top: 0.7rem;
+  border-top: 1px solid #d8e2e9;
+}
+
+.settings-changelog h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.settings-changelog-meta {
+  margin: 0.2rem 0 0.55rem;
+  font-size: 0.84rem;
+  color: #607283;
+  font-weight: 700;
+}
+
+.settings-changelog-list {
+  margin: 0;
+  padding-left: 1.05rem;
+  display: grid;
+  gap: 0.32rem;
+}
+
+.settings-changelog-list li {
+  color: #1c3746;
+  line-height: 1.35;
+  font-size: 0.9rem;
 }
 
 .chips {
